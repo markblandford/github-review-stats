@@ -1,11 +1,14 @@
+
 import os
 import requests
 import argparse
+from datetime import datetime
 
 API_URL = "https://api.github.com/graphql"
 
+
 # === QUERY BUILDER ===
-def build_query(org, repo, start_date, end_date, cursor=None):
+def build_query(org, repo, cursor=None):
     """Build the GraphQL query for fetching PR reviews."""
     after_clause = f', after: "{cursor}"' if cursor else ""
     return f"""
@@ -15,14 +18,11 @@ def build_query(org, repo, start_date, end_date, cursor=None):
           first: 50
           states: MERGED
           orderBy: {{ field: CREATED_AT, direction: DESC }}
-          filterBy: {{
-            createdAfter: "{start_date}"
-            createdBefore: "{end_date}"
-          }}
           {after_clause}
         ) {{
           nodes {{
             number
+            createdAt
             reviews(first: 100) {{
               nodes {{
                 author {{
@@ -52,11 +52,22 @@ def execute_query(query, headers):
     return data
 
 
+# === DATE FILTER ===
+def is_within_date_range(created_at, start_date, end_date):
+    """Check if PR createdAt is within the given date range."""
+    created = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+    start = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+    end = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
+    return start <= created <= end
+
+
 # === DATA EXTRACTION ===
-def extract_reviews(pr_nodes):
-    """Extract review data and aggregate counts per reviewer."""
+def extract_reviews(pr_nodes, start_date, end_date):
+    """Extract review data and aggregate counts per reviewer for PRs in date range."""
     review_stats = {}
     for pr in pr_nodes:
+        if not is_within_date_range(pr["createdAt"], start_date, end_date):
+            continue
         for review in pr["reviews"]["nodes"]:
             reviewer = review["author"]["login"]
             state = review["state"]  # APPROVED, COMMENTED, CHANGES_REQUESTED
@@ -79,12 +90,12 @@ def fetch_all_reviews(org, repo, start_date, end_date, headers):
     aggregated_stats = {}
 
     while True:
-        query = build_query(org, repo, start_date, end_date, cursor)
+        query = build_query(org, repo, cursor)
         data = execute_query(query, headers)
         pr_data = data["data"]["repository"]["pullRequests"]
 
-        # Aggregate reviews
-        batch_stats = extract_reviews(pr_data["nodes"])
+        # Aggregate reviews for PRs in date range
+        batch_stats = extract_reviews(pr_data["nodes"], start_date, end_date)
         for reviewer, counts in batch_stats.items():
             if reviewer not in aggregated_stats:
                 aggregated_stats[reviewer] = {"approvals": 0, "comments": 0, "changes_requested": 0}
@@ -115,7 +126,7 @@ def print_leaderboard(stats):
 if __name__ == "__main__":
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Generate GitHub PR review stats.")
-    parser.add_argument("--org", required=True, help="GitHub organisation name")
+    parser.add_argument("--org", required=True, help="GitHub organisation or user name (owner)")
     parser.add_argument("--repo", required=True, help="GitHub repository name")
     parser.add_argument("--start", required=True, help="Start date (ISO format: YYYY-MM-DDTHH:MM:SSZ)")
     parser.add_argument("--end", required=True, help="End date (ISO format: YYYY-MM-DDTHH:MM:SSZ)")
