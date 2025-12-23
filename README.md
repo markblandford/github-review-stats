@@ -49,7 +49,7 @@ pip install -r requirements.txt
 ## Configuration
 
 | Item | About | Source | Example |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | `GITHUB_TOKEN` | GitHub Personal Access Token (Classic) | Environment variable, `GITHUB_TOKEN` | `export GITHUB_TOKEN="your-token-here"` |
 | `ORG_NAME` | The organisation or owner of the repo | Input argument, `--org` | `--org your-org` |
 | `REPO_NAME` | The name of the repo | Input argument, `--repo` | `--repo your-repo` |
