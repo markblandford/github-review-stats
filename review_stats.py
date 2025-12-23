@@ -1,33 +1,23 @@
+import os
 import requests
-
-# === CONFIGURATION ===
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-if not GITHUB_TOKEN:
-    raise EnvironmentError("GITHUB_TOKEN environment variable is not set.")
-
-ORG_NAME = "your-org"
-REPO_NAME = "your-repo"
-START_DATE = "2025-01-01T00:00:00Z"
-END_DATE = "2025-12-31T23:59:59Z"
+import argparse
 
 API_URL = "https://api.github.com/graphql"
-HEADERS = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
-
 
 # === QUERY BUILDER ===
-def build_query(cursor=None):
+def build_query(org, repo, start_date, end_date, cursor=None):
     """Build the GraphQL query for fetching PR reviews."""
     after_clause = f', after: "{cursor}"' if cursor else ""
     return f"""
     query {{
-      repository(owner: "{ORG_NAME}", name: "{REPO_NAME}") {{
+      repository(owner: "{org}", name: "{repo}") {{
         pullRequests(
           first: 50
           states: MERGED
           orderBy: {{ field: CREATED_AT, direction: DESC }}
           filterBy: {{
-            createdAfter: "{START_DATE}"
-            createdBefore: "{END_DATE}"
+            createdAfter: "{start_date}"
+            createdBefore: "{end_date}"
           }}
           {after_clause}
         ) {{
@@ -53,9 +43,9 @@ def build_query(cursor=None):
 
 
 # === API CALL ===
-def execute_query(query):
+def execute_query(query, headers):
     """Send the GraphQL query to GitHub API and return JSON response."""
-    response = requests.post(API_URL, json={"query": query}, headers=HEADERS)
+    response = requests.post(API_URL, json={"query": query}, headers=headers)
     data = response.json()
     if "errors" in data:
         raise Exception(f"GraphQL Error: {data['errors']}")
@@ -72,32 +62,35 @@ def extract_reviews(pr_nodes):
             state = review["state"]  # APPROVED, COMMENTED, CHANGES_REQUESTED
             if reviewer:
                 if reviewer not in review_stats:
-                    review_stats[reviewer] = {"approvals": 0, "comments": 0}
+                    review_stats[reviewer] = {"approvals": 0, "comments": 0, "changes_requested": 0}
                 if state == "APPROVED":
                     review_stats[reviewer]["approvals"] += 1
+                elif state == "CHANGES_REQUESTED":
+                    review_stats[reviewer]["changes_requested"] += 1
                 else:
                     review_stats[reviewer]["comments"] += 1
     return review_stats
 
 
 # === PAGINATION HANDLER ===
-def fetch_all_reviews():
+def fetch_all_reviews(org, repo, start_date, end_date, headers):
     """Fetch all PR reviews for the given date range and aggregate stats."""
     cursor = None
     aggregated_stats = {}
 
     while True:
-        query = build_query(cursor)
-        data = execute_query(query)
+        query = build_query(org, repo, start_date, end_date, cursor)
+        data = execute_query(query, headers)
         pr_data = data["data"]["repository"]["pullRequests"]
 
         # Aggregate reviews
         batch_stats = extract_reviews(pr_data["nodes"])
         for reviewer, counts in batch_stats.items():
             if reviewer not in aggregated_stats:
-                aggregated_stats[reviewer] = {"approvals": 0, "comments": 0}
+                aggregated_stats[reviewer] = {"approvals": 0, "comments": 0, "changes_requested": 0}
             aggregated_stats[reviewer]["approvals"] += counts["approvals"]
             aggregated_stats[reviewer]["comments"] += counts["comments"]
+            aggregated_stats[reviewer]["changes_requested"] += counts["changes_requested"]
 
         # Check pagination
         if pr_data["pageInfo"]["hasNextPage"]:
@@ -111,5 +104,32 @@ def fetch_all_reviews():
 # === OUTPUT ===
 def print_leaderboard(stats):
     """Print the leaderboard sorted by total reviews."""
-    sorted_stats = sorted(stats.items(), key=lambda x: (x[1]["approvals"] + x[1]["comments"]), reverse=True)
-    print("\n=== Review Leaderboard for 2025 ===")
+    sorted_stats = sorted(stats.items(), key=lambda x: (x[1]["approvals"] + x[1]["comments"] + x[1]["changes_requested"]), reverse=True)
+    print("\n=== Review Leaderboard ===")
+    for reviewer, counts in sorted_stats:
+        total = counts["approvals"] + counts["comments"] + counts["changes_requested"]
+        print(f"{reviewer}: {total} reviews (Approvals: {counts['approvals']}, Comments: {counts['comments']}, Changes Requested: {counts['changes_requested']})")
+
+
+# === MAIN ===
+if __name__ == "__main__":
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description="Generate GitHub PR review stats.")
+    parser.add_argument("--org", required=True, help="GitHub organisation name")
+    parser.add_argument("--repo", required=True, help="GitHub repository name")
+    parser.add_argument("--start", required=True, help="Start date (ISO format: YYYY-MM-DDTHH:MM:SSZ)")
+    parser.add_argument("--end", required=True, help="End date (ISO format: YYYY-MM-DDTHH:MM:SSZ)")
+    args = parser.parse_args()
+
+    # Read token from environment
+    github_token = os.getenv("GITHUB_TOKEN")
+    if not github_token:
+        raise EnvironmentError("GITHUB_TOKEN environment variable is not set.")
+
+    headers = {"Authorization": f"Bearer {github_token}"}
+
+    try:
+        stats = fetch_all_reviews(args.org, args.repo, args.start, args.end, headers)
+        print_leaderboard(stats)
+    except Exception as e:
+        print(f"Error: {e}")
