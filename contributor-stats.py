@@ -96,7 +96,7 @@ def fetch_all_prs(org, repo, start_date, end_date, headers):
 def print_leaderboard(pr_counts):
     """Print the leaderboard sorted by number of merged PRs."""
     sorted_counts = sorted(pr_counts.items(), key=lambda x: x[1], reverse=True)
-    print("\n=== PRs Merged Leaderboard ===")
+    print("\n=== Contributor Leaderboard ===")
     for author, count in sorted_counts:
         print(f"{author}: {count} merged PRs")
 
