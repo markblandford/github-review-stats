@@ -48,23 +48,21 @@ pip install -r requirements.txt
 
 ## Configuration
 
-| Item | Source | Example |
+| Item | About | Source | Example |
 | --- | --- | --- |
-| `GITHUB_TOKEN` | Environment variable, `GITHUB_TOKEN` | `export GITHUB_TOKEN="your-token-here"` |
-
-Edit the `review_stats.py` script and set:
-
-```python
-ORG_NAME = "your-org"
-REPO_NAME = "your-repo"
-START_DATE = "2025-01-01T00:00:00Z"
-END_DATE = "2025-12-31T23:59:59Z"
-```
+| `GITHUB_TOKEN` | GitHub Personal Access Token (Classic) | Environment variable, `GITHUB_TOKEN` | `export GITHUB_TOKEN="your-token-here"` |
+| `ORG_NAME` | The organisation or owner of the repo | Input argument, `--org` | `--org your-org` |
+| `REPO_NAME` | The name of the repo | Input argument, `--repo` | `--repo your-repo` |
+| `START_DATE` | The organisation or owner of the repo | Input argument, `--start` | `--start 2025-01-01T00:00:00Z` |
+| `END_DATE` | The organisation or owner of the repo | Input argument, `--end` | `--end 2025-12-31T23:59:59Z` |
 
 ## Usage
 
+1. Set your token: `export GITHUB_TOKEN="your-token-here"`
+2. Run the script with arguments:
+
 ```bash
-python review_stats.py
+python review_stats.py --org your-org --repo your-repo --start 2025-01-01T00:00:00Z --end 2025-12-31T23:59:59Z
 ```
 
 ### Output
