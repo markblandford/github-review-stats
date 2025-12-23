@@ -1,17 +1,15 @@
+# GitHub Review & PR Merge Stats
 
-# GitHub Review Stats
-
-A Python script to generate a **leaderboard of pull request reviews** for a specific GitHub repository within a given time period.  
+This repository contains Python scripts to generate leaderboards for GitHub repositories. Ideal for tracking team contributions and review activity over a given time period.
 
 ## Features
 
 - Fetches all merged pull requests for a given date range.
-- Aggregates review counts per user.
-- Breaks down reviews into:
-  - **Approvals**
-  - **Comments**
-  - **Changes Requested**
-- Outputs a sorted leaderboard.
+- Aggregates:
+  - **Review Stats**: Approvals, Comments, Changes Requested.
+  - **Contributor Stats**: Number of merged PRs per contributor.
+- Handles pagination automatically.
+- Outputs sorted leaderboards.
 
 ## Requirements
 - Python 3.7+
@@ -53,7 +51,11 @@ pip install -r requirements.txt
 | `START_DATE` | The organisation or owner of the repo | Input argument, `--start` | `--start 2025-01-01T00:00:00Z` |
 | `END_DATE` | The organisation or owner of the repo | Input argument, `--end` | `--end 2025-12-31T23:59:59Z` |
 
-## Usage
+## The Scripts
+
+### PR Review Stats (review_stats.py)
+
+#### Usage
 
 1. Set your token: `export GITHUB_TOKEN="your-token-here"`
 2. Run the script with arguments:
@@ -62,10 +64,29 @@ pip install -r requirements.txt
 python review_stats.py --org your-org --repo your-repo --start 2025-01-01T00:00:00Z --end 2025-12-31T23:59:59Z
 ```
 
-### Output
+##### Output
 
 ```plaintext
 === Review Leaderboard ===
 alice: 42 reviews (Approvals: 30, Comments: 10, Changes Requested: 2)
 bob: 35 reviews (Approvals: 20, Comments: 15, Changes Requested: 0)
+```
+
+### PR Contributor Stats (contributor-stats.py)
+
+#### Usage
+
+1. Set your token: `export GITHUB_TOKEN="your-token-here"`
+2. Run the script with arguments:
+
+```bash
+python contributor-stats.py --org your-org --repo your-repo --start 2025-01-01T00:00:00Z --end 2025-12-31T23:59:59Z
+```
+
+##### Output
+
+```plaintext
+=== Contributor Leaderboard ===
+alice: 25 merged PRs
+bob: 18 merged PRs
 ```
