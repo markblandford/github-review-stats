@@ -72,7 +72,7 @@ alice: 42 reviews (Approvals: 30, Comments: 10, Changes Requested: 2)
 bob: 35 reviews (Approvals: 20, Comments: 15, Changes Requested: 0)
 ```
 
-### PR Contributor Stats (contributor-stats.py)
+### PR Contributor Stats (contributor_stats.py)
 
 #### Usage
 
@@ -80,7 +80,7 @@ bob: 35 reviews (Approvals: 20, Comments: 15, Changes Requested: 0)
 2. Run the script with arguments:
 
 ```bash
-python contributor-stats.py --org your-org --repo your-repo --start 2025-01-01T00:00:00Z --end 2025-12-31T23:59:59Z
+python contributor_stats.py --org your-org --repo your-repo --start 2025-01-01T00:00:00Z --end 2025-12-31T23:59:59Z
 ```
 
 ##### Output
