@@ -65,7 +65,7 @@ python review_stats.py --org your-org --repo your-repo --start 2025-01-01T00:00:
 ### Output
 
 ```plaintext
-=== Review Leaderboard for 2025 ===
+=== Review Leaderboard ===
 alice: 42 reviews (Approvals: 30, Comments: 10, Changes Requested: 2)
 bob: 35 reviews (Approvals: 20, Comments: 15, Changes Requested: 0)
 ```
