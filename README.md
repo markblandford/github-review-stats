@@ -2,10 +2,6 @@
 # GitHub Review Stats
 
 A Python script to generate a **leaderboard of pull request reviews** for a specific GitHub repository within a given time period.  
-It counts:
-
-- ✅ **Approvals**
-- 💬 **Comments**
 
 ## Features
 
@@ -14,6 +10,7 @@ It counts:
 - Breaks down reviews into:
   - **Approvals**
   - **Comments**
+  - **Changes Requested**
 - Outputs a sorted leaderboard.
 
 ## Requirements
@@ -69,6 +66,6 @@ python review_stats.py --org your-org --repo your-repo --start 2025-01-01T00:00:
 
 ```plaintext
 === Review Leaderboard for 2025 ===
-alice: 42 reviews (Approvals: 30, Comments: 12)
-bob: 35 reviews (Approvals: 20, Comments: 15)
+alice: 42 reviews (Approvals: 30, Comments: 10, Changes Requested: 2)
+bob: 35 reviews (Approvals: 20, Comments: 15, Changes Requested: 0)
 ```
