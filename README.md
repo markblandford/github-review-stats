@@ -48,10 +48,13 @@ pip install -r requirements.txt
 
 ## Configuration
 
+| Item | Source | Example |
+| --- | --- | --- |
+| `GITHUB_TOKEN` | Environment variable, `GITHUB_TOKEN` | `export GITHUB_TOKEN="your-token-here"` |
+
 Edit the `review_stats.py` script and set:
 
 ```python
-GITHUB_TOKEN = "YOUR_PERSONAL_ACCESS_TOKEN"
 ORG_NAME = "your-org"
 REPO_NAME = "your-repo"
 START_DATE = "2025-01-01T00:00:00Z"
