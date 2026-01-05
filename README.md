@@ -8,6 +8,7 @@ This repository contains Python scripts to generate leaderboards for GitHub repo
 - Aggregates:
   - **Review Stats**: Approvals, Comments, Changes Requested.
   - **Contributor Stats**: Number of merged PRs per contributor.
+  - **File Stats**: The most touched files by PRs, indicating the most used / volatile files. 
 - Handles pagination automatically.
 - Outputs sorted leaderboards.
 
@@ -90,3 +91,36 @@ python contributor_stats.py --org your-org --repo your-repo --start 2025-01-01T0
 alice: 25 merged PRs
 bob: 18 merged PRs
 ```
+
+### Files & Directories Stats (file_stats.py)
+
+#### Usage
+
+1. Set your token: `export GITHUB_TOKEN="your-token-here"`
+2. Run the script with arguments:
+
+```bash
+python file_stats.py --org your-org --repo your-repo --start 2025-01-01T00:00:00Z --end 2025-12-31T23:59:59Z --top 20 --by pr
+```
+
+##### Options
+
+- `--top N` - show top N results (default 20)
+- `--by` `["pr", "changes"]` - choose pr to rank by number of PRs touching the file/directory, or changes to rank by total additions+deletions
+
+##### Output
+
+```plaintext
+=== Top 20 Files by PRs touched ===
+1. src/app.py: 12
+2. src/utils/helpers.py: 9
+...
+
+=== Ignored PRs (more than 100 files) ===
+PR #123 createdAt: 2025-06-01T12:34:56Z
+Total ignored PRs: 1
+```
+
+#### Notes
+
+The script fetches up to 100 files per PR. PRs that touch more than 100 files are ignored and listed in a summary so you can review which PRs were excluded.
